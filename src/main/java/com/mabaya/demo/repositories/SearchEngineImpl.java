@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
@@ -43,16 +44,30 @@ public class SearchEngineImpl implements SearchEngine {
         Product product = null;
         if(listCamp.size()>1){
             //get random campaign
+            Campaign campaign = listCamp.get(ThreadLocalRandom.current().nextInt(0, listCamp.size() - 1));
+            List<Product> productList = campaign.getProducts();
             if(withCategory){
                 //filter for category
+                productList =  campaign.getProducts().stream().filter(p -> p.getCategory().equals(category))
+                        .collect(Collectors.toList());
             }
             //get random product
+            product = productList.stream().sorted((o1, o2) -> ThreadLocalRandom.current().nextInt(-1, 2))
+                    .findAny()
+                    .get();
         }else if(listCamp.size()==1){
             //get 0 campaign
+            Campaign campaign = listCamp.get(0);
+            List<Product> productList = campaign.getProducts();
             if(withCategory){
                 //filter for category
+                productList = campaign.getProducts().stream().filter(p -> p.getCategory().equals(category))
+                        .collect(Collectors.toList());
             }
             //get random product
+            product = productList.stream().sorted((o1, o2) -> ThreadLocalRandom.current().nextInt(-1, 2))
+                    .findAny()
+                    .get();
         }
         return product;
     }
